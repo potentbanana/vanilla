@@ -1,0 +1,30 @@
+{
+  "name": "potentbanana/vanilla",
+  "description": "A vanilla model and persistence utility.",
+  "type": "library",
+  "keywords": ["pdo", "db", "models"],
+  "license": "MIT",
+  "version": "0.1.1",
+  "authors": [
+    {
+      "name": "William Cliffe",
+      "email": "will@willcliffe.com",
+      "homepage": "http://willcliffe.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+      "php": ">=7.0",
+      "phpunit/phpunit": "^6.5"
+  },
+  "autoload": {
+      "psr-4": {
+          "Vanilla\\": "src/",
+          "Vanilla\\Test\\": "test/src/"
+      },
+      "psr-0": {
+          "Vanilla": "src/",
+          "Vanilla\\Test": "src/"
+      }
+  }
+}
