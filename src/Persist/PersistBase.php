@@ -22,7 +22,7 @@ class PersistBase extends AbstractPersist implements PersistBaseInterface
 
     public function __construct()
     {
-
+        // TODO: Add the actual persistence to a file.
     }
 
     public function load(ModelInterface $model, $id)

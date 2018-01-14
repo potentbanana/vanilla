@@ -17,6 +17,11 @@ class MockModel extends AbstractModel
     /**
      * @var String
      */
+    private $tableName;
+
+    /**
+     * @var String
+     */
     private $id;
 
     /**
@@ -60,5 +65,14 @@ class MockModel extends AbstractModel
         return $this;
     }
 
+    public function setTableName($tableName=null)
+    {
+        $this->tableName = $tableName;
+    }
+
+    public function tableName()
+    {
+        return $this->tableName;
+    }
 
 }

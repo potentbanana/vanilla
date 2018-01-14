@@ -23,7 +23,7 @@ class PersistBaseTest extends \PHPUnit\Framework\TestCase
     public function setUp()
     {
 
-        $this->persistBase = PersistFactory::getInstance();
+        $this->persistBase = PersistFactory::getInstance([], true);
         $model = new MockModel();
         $this->uniqueValue = uniqid();
         $model->setUniqueValue($this->uniqueValue);
