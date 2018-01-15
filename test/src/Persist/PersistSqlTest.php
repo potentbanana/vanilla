@@ -11,31 +11,30 @@ namespace Vanilla\Test\Persist;
 use Vanilla\Persist\PersistSql;
 use Vanilla\Persist\PersistFactory;
 use Vanilla\Test\Models\MockModel;
+use Vanilla\Test\Models\MockRelatedModel;
 use Vanilla\Test\Persist\Fixtures\SqlFixtures;
 use PHPUnit\Framework\TestCase;
 
 class PersistSqlTest extends TestCase
 {
-    private static $tableName;
+    private $tableName;
+    private $tableRelatedName;
+    private $sqlFixture;
 
-    public static function setUpBeforeClass()
+    public function setUp()
     {
-        self::$tableName = "super_test_table";
-        $sqlFixture = new SqlFixtures();
-        $sqlFixture->setTableName(self::$tableName);
-        $sqlFixture->setUp();
-    }
-
-    public static function tearDownAfterClass()
-    {
-        $sqlFixture = new SqlFixtures();
-        $sqlFixture->setTableName(self::$tableName);
-        $sqlFixture->tearDown();
+        $this->tableName = "tbl_" . uniqid();
+        $this->tableRelatedName = "tbl_" . uniqid();
+        $this->sqlFixture = new SqlFixtures();
+        $this->sqlFixture->setTableName($this->tableName);
+        $this->sqlFixture->setTableRelatedName($this->tableRelatedName);
+        $this->sqlFixture->setUp();
     }
 
     public function tearDown()
     {
         PersistFactory::clearInstance();
+        $this->sqlFixture->tearDown();
     }
 
     public function testStoreData()
@@ -43,13 +42,13 @@ class PersistSqlTest extends TestCase
         $persistHandler = PersistFactory::getInstance();
 
         $mockModel = new MockModel();
-        $mockModel->setTableName(self::$tableName);
+        $mockModel->setTableName($this->tableName);
         $uniqId = uniqid();
         $mockModel->setUniqueValue($uniqId);
         $persistHandler->save($mockModel);
 
         $mockModelNotLoading = new MockModel();
-        $mockModelNotLoading->setTableName(self::$tableName);
+        $mockModelNotLoading->setTableName($this->tableName);
         $mockModelNotLoading->setUniqueValue(uniqid());
         $persistHandler->save($mockModelNotLoading);
         unset($persistHandler);
@@ -58,10 +57,41 @@ class PersistSqlTest extends TestCase
         PersistFactory::clearInstance();
         $persistHandlerLoad = PersistFactory::getInstance();
         $mockModel2 = new MockModel();
-        $mockModel2->setTableName(self::$tableName);
+        $mockModel2->setTableName($this->tableName);
         $mockModel2->setUniqueValue($uniqId);
         $persistHandlerLoad->loadBy($mockModel2, "uniqueValue");
 
         $this->assertEquals($mockModel->getId(), $mockModel2->getId());
+    }
+
+    public function testForeignKey()
+    {
+        $persistHandler = PersistFactory::getInstance();
+
+        $mockRelatedModel = new MockRelatedModel();
+        $mockRelatedModel->setTableName($this->tableRelatedName);
+        $mockRelatedModel->setSomeValue("a test");
+
+        $mockRelatedModel2 = new MockRelatedModel();
+        $mockRelatedModel2->setTableName($this->tableRelatedName);
+        $mockRelatedModel2->setSomeValue("a second test");
+
+        $mockModel = new MockModel();
+        $mockModel->setTableName($this->tableName);
+        $mockModel->setMockRelatedModel([$mockRelatedModel, $mockRelatedModel2]);
+        $uniqId = uniqid();
+        $mockModel->setUniqueValue($uniqId);
+        $persistHandler->save($mockModel);
+        unset($persistHandler);
+
+        PersistFactory::clearInstance();
+        $persistHandler = PersistFactory::getInstance();
+        $mockModelInbound = new MockModel();
+        $mockModelInbound->setTableName($this->tableName);
+        $mockModelInbound->setUniqueValue($uniqId);
+        $persistHandler->loadBy($mockModelInbound, "uniqueValue");
+
+        $this->assertEquals($uniqId, $mockModelInbound->getUniqueValue());
+
     }
 }

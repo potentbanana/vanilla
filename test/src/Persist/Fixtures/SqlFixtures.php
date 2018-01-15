@@ -15,6 +15,7 @@ class SqlFixtures
 {
     private $pdo;
     private $tableName;
+    private $tableRelatedName;
 
     public function __construct()
     {
@@ -32,10 +33,15 @@ class SqlFixtures
 
     }
 
-    public function setUp()
+    public function setUpMainTable()
     {
         $sql = <<<SQL
-        CREATE TABLE {$this->tableName} (id SERIAL, uniqueValue TEXT);
+        CREATE TABLE {$this->tableName} 
+        (
+          id SERIAL PRIMARY KEY, 
+          uniqueValue TEXT
+        );
+
 SQL;
 
         $preparedStatement = $this->pdo->prepare($sql);
@@ -45,26 +51,53 @@ SQL;
             echo $exception->getMessage() . "\n";
             $this->pdo->rollBack();
         }
+    }
 
-        // Now create 10 models with unique values
-        for ($i = 0; $i < 10; $i++) {
-            $uniqId = uniqid();
-            $sql = "INSERT INTO {$this->tableName} (uniqueValue) VALUES (\"$uniqId\");";
-            $pdoStatement = $this->pdo->prepare($sql);
-            $pdoStatement->execute();
+    public function setUpRelatedTable()
+    {
+        $sql = <<<SQL
+        CREATE TABLE {$this->tableRelatedName} 
+        (
+          id SERIAL, 
+          someValue TEXT, 
+          fkId integer references {$this->tableName}(id)
+        );
+SQL;
+
+        $preparedStatement = $this->pdo->prepare($sql);
+        try {
+            $preparedStatement->execute();
+        } catch (\Exception $exception) {
+            echo $exception->getMessage() . "\n";
+            $this->pdo->rollBack();
         }
+    }
+
+    public function setUp()
+    {
+        $this->setUpMainTable();
+        $this->setUpRelatedTable();
     }
 
     public function tearDown()
     {
-        $preparedStatement = $this->pdo->prepare("DROP TABLE {$this->tableName};");
+        $preparedStatement = $this->pdo->prepare("DROP TABLE {$this->tableName} CASCADE;");
         $preparedStatement->execute();
+
+        $preparedStatement2 = $this->pdo->prepare("DROP TABLE {$this->tableRelatedName} CASCADE;");
+        $preparedStatement2->execute();
     }
 
     public function setTableName($tableName)
     {
         $this->tableName = $tableName;
     }
+
+    public function setTableRelatedName($tableRelatedName)
+    {
+        $this->tableRelatedName = $tableRelatedName;
+    }
+
     public function getTableName()
     {
         return $this->tableName;

@@ -115,12 +115,12 @@ class PersistSql extends AbstractPersist
 
 
         if (!empty($queries["paramList"])) {
-            list($results, $newInsertId) = $this->query($sql, $params);
+            list("data" => $results, "insertId" => $newInsertId) = $this->query($sql, $params);
         }
 
         if (!empty($queries["related"])) {
             foreach ($queries["related"] as $query) {
-                $this->insertWithId($query, $insertId);
+                $this->insertWithId($query, $newInsertId);
             }
         }
     }

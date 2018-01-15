@@ -30,6 +30,29 @@ class MockModel extends AbstractModel
     private $uniqueValue;
 
     /**
+     * @var MockRelatedModel
+     */
+    private $mockRelatedModel;
+
+    /**
+     * @return MockRelatedModel
+     */
+    public function getMockRelatedModel()
+    {
+        return $this->mockRelatedModel;
+    }
+
+    /**
+     * @param MockRelatedModel $mockRelatedModel
+     * @return MockModel
+     */
+    public function setMockRelatedModel($mockRelatedModel)
+    {
+        $this->mockRelatedModel = $mockRelatedModel;
+        return $this;
+    }
+
+    /**
      * @return String
      */
     public function getId()
