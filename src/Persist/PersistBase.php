@@ -47,11 +47,12 @@ class PersistBase extends AbstractPersist implements PersistBaseInterface
     {
         list("table" => $table, "data" => $data, "related" => $related) = $nextModel;
         if ($index > 0) {
-            if (array_key_exists(".foreignKey", $data)) {
-                $data[$data[".foreignKey"]] = $index;
-                unset($data[".foreignKey"]);
+            if (array_key_exists(".foreignKeys", $data)) {
+                $data[$data[".foreignKeys"]] = $index;
+                unset($data[".foreignKeys"]);
             }
         }
+
 
         if(!array_key_exists($table, $this->data)) {
             $this->data[$table] = [];
@@ -97,8 +98,8 @@ class PersistBase extends AbstractPersist implements PersistBaseInterface
                 }
             }
         }
-        if (!is_null($model->foreignKey())) {
-            $params[".foreignKey"] = $model->foreignKey();
+        if (!is_null($model->foreignKeys())) {
+            $params[".foreignKeys"] = $model->foreignKeys();
         }
         $table = $model->tableName();
 

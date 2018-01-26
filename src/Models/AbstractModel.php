@@ -11,7 +11,7 @@ namespace Vanilla\Models;
 
 abstract class AbstractModel implements ModelInterface
 {
-    public function foreignKey()
+    public function foreignKeys()
     {
         return null;
     }
@@ -37,5 +37,9 @@ abstract class AbstractModel implements ModelInterface
     {
         $class = new \ReflectionClass($this);
         return strtolower($class->getShortName());
+    }
+
+    public function listModels() {
+        return [];
     }
 }

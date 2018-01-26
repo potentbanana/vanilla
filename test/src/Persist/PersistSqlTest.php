@@ -61,7 +61,7 @@ class PersistSqlTest extends TestCase
         $mockModel2->setUniqueValue($uniqId);
         $persistHandlerLoad->loadBy($mockModel2, "uniqueValue");
 
-        $this->assertEquals($mockModel->getId(), $mockModel2->getId());
+        $this->assertEquals($mockModel->getUniqueValue(), $mockModel2->getUniqueValue());
     }
 
     public function testForeignKey()
@@ -93,5 +93,30 @@ class PersistSqlTest extends TestCase
 
         $this->assertEquals($uniqId, $mockModelInbound->getUniqueValue());
 
+    }
+
+    public function testLoadByMultiple()
+    {
+        $persistHandler = PersistFactory::GetInstance();
+
+        $mockModel = new MockModel();
+        $uniqId = uniqid();
+        $secondValue = uniqid();
+        $mockModel->setUniqueValue($uniqId);
+        $mockModel->setSecondValue($secondValue);
+        $mockModel->setTableName($this->tableName);
+        $persistHandler->save($mockModel);
+
+        // unset $persistHandler
+        unset($persistHandler);
+        PersistFactory::clearInstance();
+        $persistHandler = PersistFactory::getInstance();
+        $mockModelInbound = new MockModel();
+        $mockModelInbound->setTableName($this->tableName);
+        $mockModelInbound->setUniqueValue($uniqId);
+        $mockModelInbound->setSecondValue($secondValue);
+        $persistHandler->loadBy($mockModelInbound, ["uniqueValue", "secondValue"]);
+
+        $this->assertEquals($mockModelInbound->getId(), 1);
     }
 }

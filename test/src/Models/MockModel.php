@@ -30,6 +30,11 @@ class MockModel extends AbstractModel
     private $uniqueValue;
 
     /**
+     * @var String
+     */
+    private $secondValue;
+
+    /**
      * @var MockRelatedModel
      */
     private $mockRelatedModel;
@@ -88,6 +93,24 @@ class MockModel extends AbstractModel
         return $this;
     }
 
+    /**
+     * @return String
+     */
+    public function getSecondValue()
+    {
+        return $this->secondValue;
+    }
+
+    /**
+     * @param String $secondValue
+     * @return MockModel
+     */
+    public function setSecondValue($secondValue)
+    {
+        $this->secondValue = $secondValue;
+        return $this;
+    }
+
     public function setTableName($tableName=null)
     {
         $this->tableName = $tableName;
@@ -96,6 +119,13 @@ class MockModel extends AbstractModel
     public function tableName()
     {
         return $this->tableName;
+    }
+
+    public function relatedModels()
+    {
+        return [
+            "MockRelatedModel" => "fkId"
+        ];
     }
 
 }

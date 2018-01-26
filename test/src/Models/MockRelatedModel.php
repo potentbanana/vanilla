@@ -52,9 +52,11 @@ class MockRelatedModel extends AbstractModel
         return $this;
     }
 
-    public function foreignKey()
+    public function foreignKeys()
     {
-        return "fkId";
+        return [
+            "MockModel" => "fkId"
+        ];
     }
 
     public function setTableName($tableName=null)

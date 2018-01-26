@@ -39,7 +39,8 @@ class SqlFixtures
         CREATE TABLE {$this->tableName} 
         (
           id SERIAL PRIMARY KEY, 
-          uniqueValue TEXT
+          uniqueValue TEXT,
+          secondValue TEXT
         );
 
 SQL;

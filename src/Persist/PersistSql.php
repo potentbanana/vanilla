@@ -53,7 +53,7 @@ class PersistSql extends AbstractPersist
         if ($handler->errorCode()) {
             $this->setLastError($handler->errorInfo());
         }
-        return [ "data" => $handler->fetchAll(), "insertId" => $insertId];
+        return [ "data" => $handler->fetchAll(\PDO::FETCH_ASSOC), "insertId" => $insertId];
     }
 
     /**
@@ -63,17 +63,27 @@ class PersistSql extends AbstractPersist
      */
     public function loadBy($model, $field)
     {
-        $methodName = "get" . ucfirst($field);
-        $sql = "SELECT * FROM " . $model->tableName() . " WHERE {$field} = :{$field}";
-        $params = [
-            $field => $model->$methodName()
-        ];
+        $sql = "SELECT * FROM " . $model->tableName() . " WHERE ";
+
+        if (is_array($field)) {
+            foreach ($field as $f) {
+                $methodName = "get" . ucfirst($f);
+                $paramName = ":{$f}";
+                $sql .= "{$f} = :{$f} AND ";
+                $params[$paramName] = $model->$methodName();
+            }
+            $sql = rtrim($sql, "AND ");
+        } else {
+            $methodName = "get" . ucfirst($field);
+            $paramName = ":{$field}";
+            $params = [
+                $paramName => $model->$methodName()
+            ];
+            $sql .= "{$field} = {$paramName}";
+        }
         $results = $this->query($sql, $params);
         $data = $results["data"];
         foreach ($data[0] as $key => $value) {
-            if (is_numeric($key) || $key == "id") {
-                continue;
-            }
             $setMethod = "set" . ucfirst($key);
             $model->$setMethod($value);
         }
@@ -102,9 +112,11 @@ class PersistSql extends AbstractPersist
         list("paramList" => $params, "sql" => $sql) = $queries;
 
         if ($insertId > 0) {
-            if (array_key_exists(".foreignKey", $params)) {
-                $params[':' . $params[".foreignKey"]] = $insertId;
-                unset($params[".foreignKey"]);
+            if (array_key_exists(".foreignKeys", $params)) {
+                foreach ($params[".foreignKeys"] as $foreignModel => $foreignField) {
+                    $params[':' . $foreignField] = $insertId;
+                }
+                unset($params[".foreignKeys"]);
             }
             $parameterKeys = [];
             foreach (array_keys($params) as $key) {
@@ -157,8 +169,8 @@ class PersistSql extends AbstractPersist
                 }
             }
         }
-        if (!is_null($model->foreignKey())) {
-            $params[".foreignKey"] = $model->foreignKey();
+        if (!empty($model->foreignKeys())) {
+            $params[".foreignKeys"] = $model->foreignKeys();
         }
         if (!$model->tableName()) {
             $class = new \ReflectionClass($model);
