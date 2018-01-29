@@ -133,9 +133,29 @@ class PersistSql extends AbstractPersist
         }
     }
 
+    /**
+     * @param $table
+     * @param $params
+     * @return string
+     */
+    private function createInsertStatement($table, $params)
+    {
+        $parameterKeys = [];
+        foreach (array_keys($params) as $key) {
+            $parameterKeys[] = substr($key, 1);
+        }
+        $sql  = "INSERT INTO {$table} (" . join(',', $parameterKeys) . ") VALUES (" . join(',', array_keys($params)) . ")";
+
+        return $sql;
+    }
+
+    /**
+     * @param $queries
+     * @param int $insertId
+     */
     private function insertWithId($queries, $insertId = 0)
     {
-        list("paramList" => $params, "sql" => $sql) = $queries;
+        list("paramList" => $params) = $queries;
 
         if ($insertId > 0) {
             if (array_key_exists(".foreignKeys", $params)) {
@@ -144,12 +164,12 @@ class PersistSql extends AbstractPersist
                 }
                 unset($params[".foreignKeys"]);
             }
-            $parameterKeys = [];
-            foreach (array_keys($params) as $key) {
-                $parameterKeys[] = substr($key, 1);
+        } else {
+            if (array_key_exists(".foreignKeys", $params)) {
+                unset($params['.foreignKeys']);
             }
-            $sql  = "INSERT INTO {$queries[".table"]} (" . join(',', $parameterKeys) . ") VALUES (" . join(',', array_keys($params)) . ")";
         }
+        $sql = $this->createInsertStatement($queries[".table"], $params);
 
 
         if (!empty($queries["paramList"])) {
