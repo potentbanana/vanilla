@@ -131,6 +131,8 @@ class PersistSql extends AbstractPersist
                 $this->insertWithId($query, $insertId);
             }
         }
+
+        $model->setId($insertId);
     }
 
     /**

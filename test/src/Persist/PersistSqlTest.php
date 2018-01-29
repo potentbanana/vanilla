@@ -37,6 +37,16 @@ class PersistSqlTest extends TestCase
         $this->sqlFixture->tearDown();
     }
 
+    public function testSaveReturnsInsertId()
+    {
+        $persistHandler = PersistFactory::getInstance();
+        $mockModel = new MockModel();
+        $mockModel->setUniqueValue("doesn't matter");
+        $persistHandler->save($mockModel);
+
+        $this->assertEquals(1, $mockModel->getId());
+    }
+
     public function testStoreData()
     {
         $persistHandler = PersistFactory::getInstance();
@@ -137,6 +147,8 @@ class PersistSqlTest extends TestCase
         $loadModel->setUniqueValue($uniqId);
         $loadHandler->loadBy($loadModel, "uniqueValue");
         $this->assertNotEmpty($loadModel->getMockRelatedModel());
-        $this->assertInstanceOf("\Vanilla\Test\Models\MockRelatedModel", $loadModel->getMockRelatedModel()[0]);
+        $this->assertInstanceOf("\\Vanilla\\Test\\Models\\MockRelatedModel", $loadModel->getMockRelatedModel()[0]);
+        $this->assertInstanceOf("\\Vanilla\\Test\\Models\\MockRelatedModel", $loadModel->getMockRelatedModel()[1]);
+        $this->assertNotEquals($loadModel->getMockRelatedModel()[0], $loadModel->getMockRelatedModel()[1]);
     }
 }
