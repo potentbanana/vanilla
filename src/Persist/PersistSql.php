@@ -68,14 +68,14 @@ class PersistSql extends AbstractPersist
         $params = [];
         if (is_array($field)) {
             foreach ($field as $f) {
-                $methodName = "get" . ucfirst($f);
+                $methodName = $model->hasModelMap($f) ? $model->useModelMap("get", $f) : "get" . ucfirst($f);
                 $paramName = ":{$f}";
                 $sql .= "{$f} = :{$f} AND ";
                 $params[$paramName] = $model->$methodName();
             }
             $sql = rtrim($sql, "AND ");
         } else {
-            $methodName = "get" . ucfirst($field);
+            $methodName = $model->hasModelMap($field) ? $model->useModelMap("get", $field) : "get" . ucfirst($field);
             $paramName = ":{$field}";
             $params = [
                 $paramName => $model->$methodName()
@@ -86,7 +86,7 @@ class PersistSql extends AbstractPersist
         $data = $results["data"];
         if (count($data) == 1 && $returnArray !== true) {
             foreach ($data[0] as $key => $value) {
-                $setMethod = "set" . ucfirst($key);
+                $setMethod = $model->hasModelMap($key) ? $model->useModelMap("set", $key) : "set" . ucfirst($key);
                 $model->$setMethod($value);
             }
         } else {
@@ -94,7 +94,7 @@ class PersistSql extends AbstractPersist
                 $namespaceAndClass = "\\" . get_class($model);
                 $newModel = new $namespaceAndClass();
                 foreach($record as $key => $value) {
-                    $setMethod = "set" . ucfirst($key);
+                    $setMethod = $newModel->hasModelMap($key) ? $newModel->useModelMap("set", $key) : "set" . ucfirst($key);
                     $newModel->$setMethod($value);
                 }
                 $models[] = clone($newModel);
@@ -105,11 +105,11 @@ class PersistSql extends AbstractPersist
             $namespaceModel = get_class($model);
             $namespace = substr($namespaceModel, 0, strripos($namespaceModel, "\\"));
             foreach ($model->listModels() as $class => $key) {
-                $setMethod = "set" . ucfirst($key);
                 $namespaceAndModel = "\\{$namespace}\\{$class}";
                 $newModel = new $namespaceAndModel();
+                $setMethod = $newModel->hasModelMap($key) ? $newModel->useModelMap("set", $key) : "set" . ucfirst($key);
                 $newModel->$setMethod($model->getId());
-                $setArrayMethod = "set" . ucfirst($class);
+                $setArrayMethod = $model->hasModelMap($class) ? $model->useModelMap("set", $class) : "set" . ucfirst($class);
                 $model->$setArrayMethod($this->loadBy($newModel, $key, true));
                 unset($newModel);
             }

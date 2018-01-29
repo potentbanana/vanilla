@@ -11,6 +11,8 @@ namespace Vanilla\Models;
 
 abstract class AbstractModel implements ModelInterface
 {
+    protected $modelMap = [];
+
     public function foreignKeys()
     {
         return null;
@@ -41,5 +43,17 @@ abstract class AbstractModel implements ModelInterface
 
     public function listModels() {
         return [];
+    }
+
+    public function hasModelMap($property)
+    {
+        return in_array($property, $this->modelMap);
+    }
+
+    public function useModelMap($prefix, $property)
+    {
+        return $this->hasModelMap($property) ?
+            $prefix . $this->modelMap[$property] :
+            $prefix . ucfirst($property);
     }
 }
