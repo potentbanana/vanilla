@@ -23,8 +23,8 @@ class PersistSqlTest extends TestCase
 
     public function setUp()
     {
-        $this->tableName = "tbl_" . uniqid();
-        $this->tableRelatedName = "tbl_" . uniqid();
+        $this->tableName = "tbl_mockmodel";
+        $this->tableRelatedName = "tbl_mockrelatedmodel";
         $this->sqlFixture = new SqlFixtures();
         $this->sqlFixture->setTableName($this->tableName);
         $this->sqlFixture->setTableRelatedName($this->tableRelatedName);
@@ -42,13 +42,11 @@ class PersistSqlTest extends TestCase
         $persistHandler = PersistFactory::getInstance();
 
         $mockModel = new MockModel();
-        $mockModel->setTableName($this->tableName);
         $uniqId = uniqid();
         $mockModel->setUniqueValue($uniqId);
         $persistHandler->save($mockModel);
 
         $mockModelNotLoading = new MockModel();
-        $mockModelNotLoading->setTableName($this->tableName);
         $mockModelNotLoading->setUniqueValue(uniqid());
         $persistHandler->save($mockModelNotLoading);
         unset($persistHandler);
@@ -57,7 +55,6 @@ class PersistSqlTest extends TestCase
         PersistFactory::clearInstance();
         $persistHandlerLoad = PersistFactory::getInstance();
         $mockModel2 = new MockModel();
-        $mockModel2->setTableName($this->tableName);
         $mockModel2->setUniqueValue($uniqId);
         $persistHandlerLoad->loadBy($mockModel2, "uniqueValue");
 
@@ -69,15 +66,12 @@ class PersistSqlTest extends TestCase
         $persistHandler = PersistFactory::getInstance();
 
         $mockRelatedModel = new MockRelatedModel();
-        $mockRelatedModel->setTableName($this->tableRelatedName);
         $mockRelatedModel->setSomeValue("a test");
 
         $mockRelatedModel2 = new MockRelatedModel();
-        $mockRelatedModel2->setTableName($this->tableRelatedName);
         $mockRelatedModel2->setSomeValue("a second test");
 
         $mockModel = new MockModel();
-        $mockModel->setTableName($this->tableName);
         $mockModel->setMockRelatedModel([$mockRelatedModel, $mockRelatedModel2]);
         $uniqId = uniqid();
         $mockModel->setUniqueValue($uniqId);
@@ -87,7 +81,6 @@ class PersistSqlTest extends TestCase
         PersistFactory::clearInstance();
         $persistHandler = PersistFactory::getInstance();
         $mockModelInbound = new MockModel();
-        $mockModelInbound->setTableName($this->tableName);
         $mockModelInbound->setUniqueValue($uniqId);
         $persistHandler->loadBy($mockModelInbound, "uniqueValue");
 
@@ -104,7 +97,6 @@ class PersistSqlTest extends TestCase
         $secondValue = uniqid();
         $mockModel->setUniqueValue($uniqId);
         $mockModel->setSecondValue($secondValue);
-        $mockModel->setTableName($this->tableName);
         $persistHandler->save($mockModel);
 
         // unset $persistHandler
@@ -112,11 +104,39 @@ class PersistSqlTest extends TestCase
         PersistFactory::clearInstance();
         $persistHandler = PersistFactory::getInstance();
         $mockModelInbound = new MockModel();
-        $mockModelInbound->setTableName($this->tableName);
         $mockModelInbound->setUniqueValue($uniqId);
         $mockModelInbound->setSecondValue($secondValue);
         $persistHandler->loadBy($mockModelInbound, ["uniqueValue", "secondValue"]);
 
         $this->assertEquals($mockModelInbound->getId(), 1);
+    }
+
+    public function testLoadRelatedModels()
+    {
+        $persistHandler = PersistFactory::GetInstance();
+
+        $mockModel = new MockModel();
+        $uniqId = uniqid();
+        $secondValue = uniqid();
+        $mockModel->setUniqueValue($uniqId);
+        $mockModel->setSecondValue($secondValue);
+
+        $mockRelatedModel = new MockRelatedModel();
+        $mockRelatedModel->setSomeValue("a first test");
+
+        $mockRelatedModel2 = new MockRelatedModel();
+        $mockRelatedModel2->setSomeValue("a second test");
+        $mockModel->setMockRelatedModel([$mockRelatedModel, $mockRelatedModel2]);
+        $persistHandler->save($mockModel);
+
+        unset($persistHandler);
+        PersistFactory::clearInstance();
+
+        $loadHandler = PersistFactory::getInstance();
+        $loadModel = new MockModel();
+        $loadModel->setUniqueValue($uniqId);
+        $loadHandler->loadBy($loadModel, "uniqueValue");
+        $this->assertNotEmpty($loadModel->getMockRelatedModel());
+        $this->assertInstanceOf("\Vanilla\Test\Models\MockRelatedModel", $loadModel->getMockRelatedModel()[0]);
     }
 }

@@ -15,6 +15,27 @@ class MockRelatedModel extends AbstractModel
     private $id;
     private $someValue;
     private $tableName;
+    private $fkId;
+
+    /**
+     * @return mixed
+     */
+    public function getFkId()
+    {
+        return $this->fkId;
+    }
+
+    /**
+     * @param mixed $fkId
+     * @return MockRelatedModel
+     */
+    public function setFkId($fkId)
+    {
+        $this->fkId = $fkId;
+        return $this;
+    }
+
+
 
     /**
      * @return mixed
@@ -59,14 +80,9 @@ class MockRelatedModel extends AbstractModel
         ];
     }
 
-    public function setTableName($tableName=null)
-    {
-        $this->tableName = $tableName;
-    }
-
     public function tableName()
     {
-        return $this->tableName;
+        return "tbl_mockrelatedmodel";
     }
 }
 

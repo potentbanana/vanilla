@@ -61,10 +61,11 @@ class PersistSql extends AbstractPersist
      * @param $field
      * @return mixed
      */
-    public function loadBy($model, $field)
+    public function loadBy($model, $field, $returnArray = false)
     {
+        $models = [];
         $sql = "SELECT * FROM " . $model->tableName() . " WHERE ";
-
+        $params = [];
         if (is_array($field)) {
             foreach ($field as $f) {
                 $methodName = "get" . ucfirst($f);
@@ -83,12 +84,37 @@ class PersistSql extends AbstractPersist
         }
         $results = $this->query($sql, $params);
         $data = $results["data"];
-        foreach ($data[0] as $key => $value) {
-            $setMethod = "set" . ucfirst($key);
-            $model->$setMethod($value);
+        if (count($data) == 1 && $returnArray !== true) {
+            foreach ($data[0] as $key => $value) {
+                $setMethod = "set" . ucfirst($key);
+                $model->$setMethod($value);
+            }
+        } else {
+            foreach($data as $record) {
+                $namespaceAndClass = "\\" . get_class($model);
+                $newModel = new $namespaceAndClass();
+                foreach($record as $key => $value) {
+                    $setMethod = "set" . ucfirst($key);
+                    $newModel->$setMethod($value);
+                }
+                $models[] = clone($newModel);
+                unset($newModel);
+            }
         }
-
-        return $model;
+        if(!empty($model->listModels())) {
+            $namespaceModel = get_class($model);
+            $namespace = substr($namespaceModel, 0, strripos($namespaceModel, "\\"));
+            foreach ($model->listModels() as $class => $key) {
+                $setMethod = "set" . ucfirst($key);
+                $namespaceAndModel = "\\{$namespace}\\{$class}";
+                $newModel = new $namespaceAndModel();
+                $newModel->$setMethod($model->getId());
+                $setArrayMethod = "set" . ucfirst($class);
+                $model->$setArrayMethod($this->loadBy($newModel, $key, true));
+                unset($newModel);
+            }
+        }
+        return empty($models) ? $model : $models;
     }
 
     /**

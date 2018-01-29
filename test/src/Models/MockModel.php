@@ -111,17 +111,12 @@ class MockModel extends AbstractModel
         return $this;
     }
 
-    public function setTableName($tableName=null)
-    {
-        $this->tableName = $tableName;
-    }
-
     public function tableName()
     {
-        return $this->tableName;
+        return "tbl_mockmodel";
     }
 
-    public function relatedModels()
+    public function listModels()
     {
         return [
             "MockRelatedModel" => "fkId"
