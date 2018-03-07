@@ -11,7 +11,34 @@ namespace Vanilla\Models;
 
 abstract class AbstractModel implements ModelInterface
 {
+    /**
+     * @var array
+     */
     protected $modelMap = [];
+
+    /**
+     * @var Integer
+     */
+    protected $id;
+
+    /**
+     * @param $id
+     * @return $this
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @param $id
+     * @return int
+     */
+    public function getId($id)
+    {
+        return $this->id;
+    }
 
     public function foreignKeys()
     {
