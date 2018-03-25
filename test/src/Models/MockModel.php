@@ -22,11 +22,6 @@ class MockModel extends AbstractModel
     /**
      * @var String
      */
-    private $id;
-
-    /**
-     * @var String
-     */
     private $uniqueValue;
 
     /**

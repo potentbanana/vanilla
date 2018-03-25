@@ -39,6 +39,7 @@ class PersistSqlTest extends TestCase
 
     public function testSaveReturnsInsertId()
     {
+        // tear down the sql fixture
         $persistHandler = PersistFactory::getInstance();
         $mockModel = new MockModel();
         $mockModel->setUniqueValue("doesn't matter");

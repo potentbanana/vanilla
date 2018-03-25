@@ -32,10 +32,9 @@ abstract class AbstractModel implements ModelInterface
     }
 
     /**
-     * @param $id
      * @return int
      */
-    public function getId($id)
+    public function getId()
     {
         return $this->id;
     }

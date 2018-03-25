@@ -185,6 +185,13 @@ class PersistSql extends AbstractPersist
         }
     }
 
+    private function updateParams(&$params, &$parameterKeys, $model, $key, $value)
+    {
+        $fieldName = $model->hasModelMap($key) ? $model->useModelMap('', $key) : $key;
+        $params[':' . $fieldName] = $value;
+        $parameterKeys[$fieldName] = lcfirst($fieldName);
+    }
+
     /**
      * @param $model
      * @return array
@@ -203,16 +210,20 @@ class PersistSql extends AbstractPersist
                 if (is_object($value)) {
                     $queries[] = $this->prepareModel($value);
                 } else if (is_array($value)) {
-                    // Check back
+                    $isJustArray = true;
                     foreach($value as $k => $v) {
                         if (is_object($v)) {
                             $queries[] = $this->prepareModel($v);
+                            $isJustArray = false;
                         }
+                    }
+                    if ($isJustArray === true) {
+                        $value = json_encode($value);
+                        $this->updateParams($params, $parameterKeys, $model, $key, $value);
                     }
                 } else {
                     if (!empty($value)) {
-                        $params[':' . lcfirst($key)] = $value;
-                        $parameterKeys[] = lcfirst($key);
+                        $this->updateParams($params, $parameterKeys, $model, $key, $value);
                     }
                 }
             }

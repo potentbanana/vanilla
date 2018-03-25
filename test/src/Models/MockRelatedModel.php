@@ -12,7 +12,6 @@ use Vanilla\Models\AbstractModel;
 
 class MockRelatedModel extends AbstractModel
 {
-    private $id;
     private $someValue;
     private $tableName;
     private $fkId;
