@@ -73,7 +73,7 @@ abstract class AbstractModel implements ModelInterface
 
     public function hasModelMap($property)
     {
-        return in_array($property, $this->modelMap);
+        return in_array($property, array_keys($this->modelMap));
     }
 
     public function useModelMap($prefix, $property)
