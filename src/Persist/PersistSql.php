@@ -75,18 +75,19 @@ class PersistSql extends AbstractPersist
             }
             $sql = rtrim($sql, "AND ");
         } else {
-            $methodName = $model->hasModelMap($field) ? $model->useModelMap("get", $field) : "get" . ucfirst($field);
-            $paramName = ":{$field}";
+            $methodName = "get{$field}"; // $model->hasModelMap($field) ? $model->useModelMap("get", $field) : "get" . ucfirst($field);
+            $paramName = ":" . ($model->hasModelMap($field) ? $model->useModelMap("", $field) : $field);
             $params = [
                 $paramName => $model->$methodName()
             ];
-            $sql .= "{$field} = {$paramName}";
+            $fieldStr = $model->hasModelMap($field) ? $model->useModelMap("", $field) : $field;
+            $sql .= "{$fieldStr} = {$paramName}";
         }
         $results = $this->query($sql, $params);
         $data = $results["data"];
-        if (count($data) == 1 && $returnArray !== true) {
+        if (count($data) == 1 || $returnArray !== true) {
             foreach ($data[0] as $key => $value) {
-                $setMethod = $model->hasModelMap($key) ? $model->useModelMap("set", $key) : "set" . ucfirst($key);
+                $setMethod = $model->hasModelMap($key, true) ? $model->useModelMap("set", $key, true) : "set" . ucfirst($key);
                 $model->$setMethod($value);
             }
         } else {
@@ -94,7 +95,7 @@ class PersistSql extends AbstractPersist
                 $namespaceAndClass = "\\" . get_class($model);
                 $newModel = new $namespaceAndClass();
                 foreach($record as $key => $value) {
-                    $setMethod = $newModel->hasModelMap($key) ? $newModel->useModelMap("set", $key) : "set" . ucfirst($key);
+                    $setMethod = $newModel->hasModelMap($key, true) ? $newModel->useModelMap("set", $key, true) : "set" . ucfirst($key);
                     $newModel->$setMethod($value);
                 }
                 $models[] = clone($newModel);
@@ -237,11 +238,27 @@ class PersistSql extends AbstractPersist
         } else {
             $table = $model->tableName();
         }
+        if ($model->getId() > 0) {
+            $primaryKey = $model->useModelMap("", "Id");
+            $primaryId = $model->getId();
+            $sql = "UPDATE {$table} SET " . $this->getUpdateKeyValues($parameterKeys, $params) . " WHERE {$primaryKey} = {$primaryId}";
+        } else {
+            $sql = "INSERT INTO {$table} (" . join(',', $parameterKeys ) . ") VALUES (" . join(',', array_keys($params)) . ")";
+        }
         return [
             ".table" => $table,
-            "sql" => "INSERT INTO {$table} (" . join(',', $parameterKeys ) . ") VALUES (" . join(',', array_keys($params)) . ")",
+            "sql" => $sql,
             "paramList" => $params,
             "related" => $queries
         ];
+    }
+
+    public function getUpdateKeyValues($parameterKeys, $params)
+    {
+        $updateString = "";
+        foreach (array_keys($parameterKeys) as $idx => $key) {
+            $updateString .= lcfirst($key) . " = " . (array_keys($params)[$idx]) . ",";
+        }
+        return preg_replace('/,$/', '', $updateString);
     }
 }

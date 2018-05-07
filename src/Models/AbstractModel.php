@@ -71,15 +71,17 @@ abstract class AbstractModel implements ModelInterface
         return [];
     }
 
-    public function hasModelMap($property)
+    public function hasModelMap($property, $valueAsIndex=false)
     {
-        return in_array($property, array_keys($this->modelMap));
+        $map = $valueAsIndex === true ? array_flip($this->modelMap) : $this->modelMap;
+        return in_array($property, array_keys($map));
     }
 
-    public function useModelMap($prefix, $property)
+    public function useModelMap($prefix, $property, $valueAsIndex=false)
     {
-        return $this->hasModelMap($property) ?
-            $prefix . $this->modelMap[$property] :
+        $map = $valueAsIndex === true ? array_flip($this->modelMap) : $this->modelMap;
+        return $this->hasModelMap($property, $valueAsIndex) ?
+            $prefix . $map[$property] :
             $prefix . ucfirst($property);
     }
 }
